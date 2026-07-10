@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     MY FIRST APP — A TO-DO LIST
+     ============================================================
+     Welcome! This one file IS your entire app. It contains the
+     three languages that power every website and web app:
+
+       1. HTML — the STRUCTURE (what things exist on the page)
+       2. CSS  — the STYLE (what those things look like)
+       3. JavaScript — the BEHAVIOUR (what happens when you
+          tap, type, or click)
+
+     How to use this file:
+       • Double-click it to open it in any browser — that's it.
+       • To read the code, open it in a text editor (Notepad,
+         VS Code, etc.) side-by-side with the browser.
+       • Change something small, save, refresh the browser,
+         and watch what happens. That loop — edit, save,
+         refresh — is how all web development works.
+
+     Read the comments from top to bottom like a tutorial.
+     Comments in HTML look like this one. They are ignored by
+     the browser; they exist purely for humans.
+     ============================================================ -->
+
+<!-- Every web page starts by declaring "this is an HTML document"
+     and which language it's written in. -->
+<html lang="en">
+
+<head>
+  <!-- The <head> is the "settings" section. Nothing here is
+       visible on the page itself. -->
+
+  <!-- Tells the browser to use modern text encoding (so symbols
+       like £ and emoji display correctly). -->
+  <meta charset="UTF-8">
+
+  <!-- THE most important line for mobile apps. Without it,
+       phones pretend to be desktop monitors and shrink
+       everything. With it, your app fits the phone screen. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- Colours the browser's own toolbar to match our app —
+       a small touch that makes it feel more "native". -->
+  <meta name="theme-color" content="#16746f">
+
+  <!-- The text shown in the browser tab, and the name used if
+       someone saves the app to their phone's home screen. -->
+  <title>My Tasks</title>
+
+  <!-- FUTURE PWA NOTE: when we make this installable on your
+       phone later, a <link rel="manifest"> line will go right
+       here. One line — that's the hook PWAs hang off. -->
+
+
+  <!-- ==========================================================
+       PART 2: CSS — THE STYLE
+       ==========================================================
+       Everything between <style> and </style> is CSS.
+       CSS is a list of rules. Each rule says:
+         "find things that match this SELECTOR,
+          and apply these PROPERTIES to them."
+
+       Example:
+          button { color: white; }
+          ^selector  ^property  ^value
+
+       Comments in CSS look like this: /* comment */
+       ========================================================== -->
+  <style>
+
+    /* ---- Design tokens -------------------------------------
+       We define our colours ONCE, up here, as named variables.
+       Then the rest of the CSS refers to the names. Want a new
+       colour scheme? Change these five lines and the whole app
+       updates. Professional apps work exactly this way. */
+    :root {
+      --bg:        #eef2ef;   /* soft green-grey page background */
+      --card:      #ffffff;   /* white for the main panel        */
+      --ink:       #1e2a28;   /* near-black text                 */
+      --ink-soft:  #6b7a76;   /* muted text (hints, done tasks)  */
+      --accent:    #16746f;   /* deep teal — buttons, highlights */
+      --accent-soft: #d8eae8; /* pale teal — subtle backgrounds  */
+      --danger:    #b3423a;   /* muted red — the delete action   */
+    }
+
+    /* ---- Reset ----------------------------------------------
+       Browsers add their own default margins and padding to
+       everything. We wipe them so WE are in control.
+       The * selector means "every element on the page". */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box; /* makes width calculations sane */
+    }
+
+    /* ---- The page itself ------------------------------------ */
+    body {
+      /* "system-ui" means: use whatever font the device itself
+         uses — San Francisco on iPhone, Segoe on Windows.
+         Free, fast, and automatically feels at home. */
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);        /* var() reads a token from :root */
+      color: var(--ink);
+      min-height: 100vh;            /* vh = % of the screen height */
+      display: flex;                /* flexbox: a layout tool... */
+      justify-content: center;      /* ...centre child horizontally */
+      padding: 24px 16px;
+    }
+
+    /* ---- The app panel --------------------------------------
+       Everything lives inside one card, phone-width even on a
+       big monitor, so it always looks like an app. */
+    .app {
+      background: var(--card);
+      width: 100%;
+      max-width: 420px;             /* never wider than a phone */
+      border-radius: 20px;          /* rounded corners */
+      box-shadow: 0 8px 30px rgba(30, 42, 40, 0.12); /* soft shadow */
+      padding: 28px 22px;
+      align-self: flex-start;
+    }
+
+    /* ---- Header ---------------------------------------------- */
+    h1 {
+      font-size: 1.6rem;            /* rem = relative to base size */
+      letter-spacing: -0.02em;      /* slightly tighter = modern   */
+    }
+
+    .date {
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    /* ---- The "add a task" row -------------------------------- */
+    .add-row {
+      display: flex;                /* input and button side by side */
+      gap: 8px;                     /* space between them */
+      margin: 20px 0;
+    }
+
+    #task-input {
+      flex: 1;                      /* input stretches to fill space */
+      padding: 14px;
+      font-size: 1rem;
+      border: 2px solid var(--accent-soft);
+      border-radius: 12px;
+      outline: none;                /* we'll style focus ourselves */
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    /* :focus = "when the user has clicked into it".
+       A visible focus state matters for keyboard users too. */
+    #task-input:focus {
+      border-color: var(--accent);
+      background: var(--card);
+    }
+
+    #add-button {
+      padding: 14px 18px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;              /* hand cursor on desktop */
+    }
+
+    /* :active = the moment a button is being pressed.
+       A tiny shrink makes taps feel physical. */
+    #add-button:active {
+      transform: scale(0.96);
+    }
+
+    /* ---- The task list --------------------------------------- */
+    ul {
+      list-style: none;             /* remove the default bullets */
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--accent-soft);
+      /* Animate new tasks in — see @keyframes at the bottom. */
+      animation: slide-in 0.25s ease;
+    }
+
+    /* Our custom checkbox: an empty circle... */
+    .check {
+      width: 26px;
+      height: 26px;
+      min-width: 26px;              /* don't let flexbox squash it */
+      border: 2px solid var(--accent);
+      border-radius: 50%;           /* 50% turns a square into a circle */
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: white;
+      transition: background 0.2s;  /* animate colour changes */
+    }
+
+    /* ...that fills with teal when its task is done.
+       "li.done .check" reads: a .check INSIDE a li that also
+       has the class "done". Nesting selectors like this is how
+       CSS targets things precisely. */
+    li.done .check {
+      background: var(--accent);
+    }
+
+    .task-text {
+      flex: 1;                      /* text takes all spare width */
+      font-size: 1rem;
+      word-break: break-word;       /* wrap very long tasks */
+    }
+
+    li.done .task-text {
+      color: var(--ink-soft);
+      text-decoration: line-through; /* the classic strikethrough */
+    }
+
+    .delete {
+      border: none;
+      background: none;
+      color: var(--ink-soft);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .delete:hover {
+      color: var(--danger);
+      background: var(--accent-soft);
+    }
+
+    /* ---- Empty state ------------------------------------------
+       Shown only when there are no tasks. An empty screen should
+       invite action, not just sit there blank. */
+    #empty-state {
+      text-align: center;
+      color: var(--ink-soft);
+      padding: 36px 12px;
+      line-height: 1.5;
+    }
+
+    #empty-state .big {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* ---- Footer ------------------------------------------------ */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+    }
+
+    #clear-done {
+      border: none;
+      background: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* ---- Animation ---------------------------------------------
+       @keyframes defines the steps; the li rule above plays it. */
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Accessibility: some people get motion-sick from animation.
+       Their device tells us, and we switch it off. */
+    @media (prefers-reduced-motion: reduce) {
+      li { animation: none; }
+      .check { transition: none; }
+    }
+  </style>
+</head>
+
+
+<!-- ============================================================
+     PART 1: HTML — THE STRUCTURE
+     ============================================================
+     The <body> is everything the user actually sees.
+     Notice how little there is: just the skeleton. The task
+     list itself starts EMPTY — JavaScript will fill it in.
+     That's the big idea of an "app" vs a "page": the content
+     is created and changed by code while you use it.
+     ============================================================ -->
+<body>
+
+  <!-- class="app" gives this box a name so CSS can style it.
+       Think of classes as sticky labels you attach to elements. -->
+  <main class="app">
+
+    <header>
+      <!-- id="today" is a UNIQUE name so JavaScript can find
+           this exact element and write today's date into it.
+           class = styling label (reusable)
+           id    = JavaScript handle (one of a kind)          -->
+      <p class="date" id="today"></p>
+      <h1>My Tasks</h1>
+    </header>
+
+    <!-- The input row: a text box and a button. -->
+    <div class="add-row">
+      <input
+        type="text"
+        id="task-input"
+        placeholder="What needs doing?"
+        autocomplete="off"
+      >
+      <button id="add-button">Add</button>
+    </div>
+
+    <!-- The message shown when the list is empty. -->
+    <div id="empty-state">
+      <span class="big">&#127793;</span>
+      Nothing here yet.<br>
+      Add your first task above.
+    </div>
+
+    <!-- ul = "unordered list". JavaScript will create an
+         <li> (list item) inside here for every task. -->
+    <ul id="task-list"></ul>
+
+    <div class="footer">
+      <span id="count">0 tasks</span>
+      <button id="clear-done">Clear completed</button>
+    </div>
+
+  </main>
+
+
+  <!-- ==========================================================
+       PART 3: JAVASCRIPT — THE BEHAVIOUR
+       ==========================================================
+       Everything between <script> and </script> is JavaScript.
+       It runs top-to-bottom when the page loads, then waits
+       for the user to do things.
+
+       Comments in JavaScript start with //
+       ========================================================== -->
+  <script>
+
+    // ---------- THE DATA -------------------------------------
+    // "let" creates a variable — a named box that holds a value.
+    // Our entire app's data is one ARRAY (an ordered list,
+    // written with square brackets []) of task OBJECTS.
+    //
+    // Each task object looks like:
+    //    { text: "Feed the koi", done: false }
+    //
+    // An object is a bundle of labelled values (curly braces {}).
+    // This separation — data here, display below — is the single
+    // most important pattern in app development.
+    let tasks = [];
+
+
+    // ---------- FINDING OUR HTML ELEMENTS ---------------------
+    // "document" means "the page". getElementById fetches the
+    // element with that id so we can work with it in code.
+    // "const" is like "let" but the box can't be swapped out —
+    // use it for things that never change.
+    const input      = document.getElementById("task-input");
+    const addButton  = document.getElementById("add-button");
+    const list       = document.getElementById("task-list");
+    const emptyState = document.getElementById("empty-state");
+    const countLabel = document.getElementById("count");
+    const clearDone  = document.getElementById("clear-done");
+
+
+    // ---------- SAVING & LOADING -------------------------------
+    // Browsers give every website a small private storage space
+    // called localStorage. It survives closing the browser, so
+    // your tasks are still there tomorrow.
+    //
+    // We wrap it in try/catch because a few environments (some
+    // private-browsing modes, embedded previews) block storage.
+    // try/catch means: "attempt this; if it fails, don't crash —
+    // do the backup plan instead." Here the backup plan is
+    // simply "carry on without saving".
+
+    function saveTasks() {
+      try {
+        // localStorage can only hold text, so JSON.stringify
+        // converts our array of objects into one text string.
+        localStorage.setItem("my-tasks", JSON.stringify(tasks));
+      } catch (error) {
+        // Storage unavailable — the app still works for this
+        // session, it just won't remember after closing.
+      }
+    }
+
+    function loadTasks() {
+      try {
+        const saved = localStorage.getItem("my-tasks");
+        if (saved) {                     // if we found something...
+          tasks = JSON.parse(saved);     // ...turn text back into an array
+        }
+      } catch (error) {
+        tasks = [];                      // start fresh if anything went wrong
+      }
+    }
+
+
+    // ---------- DRAWING THE SCREEN -----------------------------
+    // This is the heart of the app. render() throws away the
+    // current list on screen and rebuilds it from the "tasks"
+    // array. Whenever the data changes, we call render() and
+    // the screen catches up. Data changes → screen follows.
+
+    function render() {
+
+      list.innerHTML = "";   // empty the on-screen list completely
+
+      // Loop through the array. For each task we get the task
+      // itself and its position (index: 0, 1, 2, ...).
+      // We need the index so buttons know WHICH task they belong to.
+      tasks.forEach(function (task, index) {
+
+        // Create a brand-new <li> element in memory...
+        const item = document.createElement("li");
+
+        // ...tag it "done" if the task is completed, so the
+        // CSS rules for li.done kick in (teal circle, strikethrough)...
+        if (task.done) {
+          item.classList.add("done");
+        }
+
+        // ...build its contents. The backticks (`) let us mix
+        // text with values using ${...} — note how each button
+        // carries the task's index number.
+        // "✓" only appears once the circle is filled (CSS handles
+        // the colour; the tick is always there, white-on-white
+        // until the background turns teal).
+        item.innerHTML = `
+          <button class="check" onclick="toggleTask(${index})">&#10003;</button>
+          <span class="task-text">${escapeHtml(task.text)}</span>
+          <button class="delete" onclick="deleteTask(${index})" title="Delete">&#10005;</button>
+        `;
+
+        // ...and attach it to the real page.
+        list.appendChild(item);
+      });
+
+      // Show the friendly empty message only when there's nothing.
+      // The ? : line is a compact if/else:
+      //    condition ? value-if-true : value-if-false
+      emptyState.style.display = tasks.length === 0 ? "block" : "none";
+
+      // Update the counter, e.g. "3 tasks, 1 done".
+      const doneCount = tasks.filter(function (t) { return t.done; }).length;
+      countLabel.textContent =
+        tasks.length + (tasks.length === 1 ? " task" : " tasks") +
+        (doneCount > 0 ? ", " + doneCount + " done" : "");
+
+      saveTasks();  // every redraw is a good moment to save
+    }
+
+
+    // ---------- SECURITY SIDE-NOTE ------------------------------
+    // If someone typed "<b>hi</b>" as a task, innerHTML would
+    // treat it as real HTML. Harmless here, but on a shared app
+    // that's how attacks happen ("XSS"). This tiny function turns
+    // typed text into safe, display-only text. Good habits early!
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;   // textContent never runs as HTML
+      return div.innerHTML;
+    }
+
+
+    // ---------- THE ACTIONS -------------------------------------
+    // Each action follows the same rhythm:
+    //   1. change the data (the tasks array)
+    //   2. call render() so the screen updates
+    // Master that rhythm and you understand app development.
+
+    function addTask() {
+      const text = input.value.trim();  // .trim() removes stray spaces
+
+      if (text === "") {                // ignore empty submissions
+        return;                          // "return" = stop here
+      }
+
+      // .push() appends a new item to the end of an array.
+      tasks.push({ text: text, done: false });
+
+      input.value = "";                 // clear the box for the next one
+      input.focus();                    // keep the keyboard ready
+      render();
+    }
+
+    function toggleTask(index) {
+      // The ! means "not" — so this flips true→false or false→true.
+      tasks[index].done = !tasks[index].done;
+      render();
+    }
+
+    function deleteTask(index) {
+      // .splice(position, howMany) removes items from an array.
+      tasks.splice(index, 1);
+      render();
+    }
+
+
+    // ---------- LISTENING FOR THE USER ---------------------------
+    // An "event listener" says: when EVENT happens on ELEMENT,
+    // run FUNCTION. This is how apps respond to people.
+
+    // When the Add button is clicked → addTask
+    addButton.addEventListener("click", addTask);
+
+    // When a key is pressed in the input and it's Enter → addTask
+    // (crucial on phones, where Enter is the keyboard's "go" key)
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        addTask();
+      }
+    });
+
+    // Clear completed: .filter() builds a NEW array containing
+    // only the items that pass a test — here, tasks NOT done.
+    clearDone.addEventListener("click", function () {
+      tasks = tasks.filter(function (t) { return !t.done; });
+      render();
+    });
+
+
+    // ---------- STARTUP -------------------------------------------
+    // Everything above just DEFINED behaviour. These three lines
+    // actually run when the page opens:
+
+    // 1. Write today's date into the header.
+    document.getElementById("today").textContent =
+      new Date().toLocaleDateString("en-GB", {
+        weekday: "long", day: "numeric", month: "long"
+      });
+
+    loadTasks();  // 2. Fetch any saved tasks from localStorage.
+    render();     // 3. Draw the screen for the first time.
+
+    // That's the whole app. ~100 lines of actual code.
+    // Ideas to try yourself (each is a real exercise):
+    //   • Change the accent colour in :root and refresh.
+    //   • Change the empty-state message.
+    //   • Harder: add an "edit task" feature (hint: a new
+    //     function that sets tasks[index].text, then render()).
+  </script>
+</body>
+</html>
